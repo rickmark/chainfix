@@ -1,0 +1,29 @@
+---
+rules:
+  - name: "Apple ID Recovery Should be Same Device Only"
+    criteria:
+      - key: svce
+        in:
+          - com.apple.account.idms.password-reset-token
+          - com.apple.account.idms.password-reset-token-backup
+      - key: agrp
+        value: apple
+      - key: pdmn
+        value: aku
+        invert: true
+  - name: "Apple ID Recovery Should Not Be Synced"
+    criteria:
+      - key: svce
+        in:
+          - com.apple.account.idms.password-reset-token
+          - com.apple.account.idms.password-reset-token-backup
+      - key: agrp
+        value: apple
+      - key: sync
+        value: 1
+actions:
+  - name: "Clear Sleap Proxy Certificates"
+    actions:
+      - 
+  - name: "Remvoe HomeKit Pairing Records"
+  - name: "Remove All AirPort Passwords"
