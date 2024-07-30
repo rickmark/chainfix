@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+LIB_DIR = File.join(File.basename(__file__), '../lib')
+
+$:.unshift LIB_DIR
+
+cmd = ChainFix::Command.new ARGV
+cmd.run!

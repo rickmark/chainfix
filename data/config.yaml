@@ -24,6 +24,30 @@ rules:
 actions:
   - name: "Clear Sleap Proxy Certificates"
     actions:
-      - 
+      - type: select
+        criteria:
+          - key: agrp
+            value: com.apple.srp-mdsn-proxy
+      - type: remove
   - name: "Remvoe HomeKit Pairing Records"
+    actions:
+      - type: select
+        criteria:
+          - key: agrp
+            value: com.apple.hap.pairing
   - name: "Remove All AirPort Passwords"
+    actions:
+      - type: select
+        criteria:
+          - key: agrp
+            in:
+              - 
+  - name: "Remove All Bluetooth Records"
+    actions:
+      - type: select
+        criteria:
+          - key: agrp
+            values: agrp com.apple.bluetooth
+      - type: remove
+  
+

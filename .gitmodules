@@ -1,0 +1,3 @@
+[submodule "keychain-go"]
+	path = keychain-go
+	url = https://github.com/dunhamsteve/ios.git
