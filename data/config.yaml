@@ -8,6 +8,7 @@ rules:
           - com.apple.account.idms.password-reset-token-backup
       - key: agrp
         value: apple
+    assert:
       - key: pdmn
         value: aku
         invert: true
@@ -19,35 +20,101 @@ rules:
           - com.apple.account.idms.password-reset-token-backup
       - key: agrp
         value: apple
+    assert:
       - key: sync
-        value: 1
+        value: 0
 actions:
   - name: "Clear Sleap Proxy Certificates"
-    actions:
-      - type: select
-        criteria:
-          - key: agrp
-            value: com.apple.srp-mdsn-proxy
-      - type: remove
+    criteria:
+      - key: agrp
+        value: com.apple.srp-mdsn-proxy
+    action: remove
   - name: "Remvoe HomeKit Pairing Records"
-    actions:
-      - type: select
-        criteria:
-          - key: agrp
-            value: com.apple.hap.pairing
+    criteria:
+      - key: agrp
+        value: com.apple.hap.pairing
+    action: remove
   - name: "Remove All AirPort Passwords"
-    actions:
-      - type: select
-        criteria:
-          - key: agrp
-            in:
-              - 
+    criteria:
+      - key: agrp
+        value: apple
+      - key: svce
+        value: AirPort
+          - 
+    action: remove
   - name: "Remove All Bluetooth Records"
-    actions:
-      - type: select
-        criteria:
-          - key: agrp
-            values: agrp com.apple.bluetooth
-      - type: remove
-  
-
+    criteria:
+      - key: agrp
+        values: agrp com.apple.bluetooth
+    action: remove
+  - name: "Remove all Rapport Records"
+    criteria:
+      - key: agrp
+        value: com.apple.rapport
+    action: remove
+  - name: "Remove Search Party Network"
+    criteria:
+      - key: sdmn
+        value: ProtectedCloudStorage
+      - key: agrp
+        value: com.apple.ProtectedCloudStorage
+      - key: labl
+        value: PCS com.apple.icloud.searchparty
+        partial: true
+    action: remove
+  - name: "Reset iAd Network"
+    criteria:
+      - key: agrp
+        value: com.apple.ProtectedCLoudStorage
+      - key: labl
+        value: PCS com.apple.iad-cloudkit
+        partial: true
+    action: remove
+  - name: "Remove FindMy Network"
+    criteria:
+      - key: agrp
+        value: com.apple.ProtectedCloudStorage
+      - key: labl
+        value: PCS com.apple.findmy
+        partial: true
+    action: remove
+  - name: "Remove Health Data"
+    criteria:
+      - key: agrp
+        value: com.apple.ProtectedCloudStorage
+      - key: labl
+        in: 
+          - PCS com.apple.health
+          - PCS DigitalHealth
+        partial: true
+        partial: true
+    action: remove
+  - name: "Remove Safari Synced Tabs"
+    critera:
+      - key: agrp
+        value: com.apple.ProtectedCloudStorage
+      - key: labl
+        value: PCS com.apple.SafariShared.CloudTabs
+        partial: true
+  - name: "Remove Safari Synced History"
+    criteria:
+      - key: agrp
+        value: com.apple.ProtectedCloudStorage
+      - key: labl
+        value: PCS com.apple.SafariShared.History
+        partial: true
+    action: remove
+  - name: "Remove Siri Synced Data"
+    criteria:
+      - key: agrp
+        value: com.apple.ProtectedCloudStorage
+      - key: labl
+        in:
+          - PCS com.apple.siri
+          - PCS SiriActions
+        partial: true
+    action: remove
+  - name: "Remove Spotlight Encrypted Data"
+    criteria:
+      - key: agrp
+        value: com.apple.Spotlight
