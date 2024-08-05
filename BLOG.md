@@ -83,6 +83,48 @@ The second bug is much worse…. The code above works great in the common case, 
 This will insert a matching entry into the iCloud keychain, which will happily be synced since we set `kSecAttrSynchronizable` to true, and will be available back to the macOS device due to the lowering of the protection level to `kSecAttrAccessibleAlways`.  All the attacker needs do, is wait for the victim to use their iDevice and login to the account.
 
 
+Variant B
+    let query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
+                                kSecAttrServer as String: server,
+                                kSecMatchLimit as String: kSecMatchLimitOne,
+                                kSecReturnAttributes as String: true,
+                                kSecReturnData as String: true]
+    
+    var item: CFTypeRef?
+    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    guard status == errSecSuccess else { throw KeychainError.unhandledError(status: status) }
+    
+    if status != errSecItemNotFound {
+      let account = credentials.username
+      let password = credentials.password.data(using: String.Encoding.utf8)!
+      var query: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
+                                  kSecAttrAccount as String: account,
+                                  kSecAttrServer as String: server,
+                                  kSecValueData as String: password,
+                                  kSecAttrSynchronizable as String: false,
+                                  kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly]
+    
+      let status = SecItemAdd(query as CFDictionary, nil)
+      guard status == errSecSuccess else { throw KeychainError.unhandledError(status: status) }  
+    } else {
+      guard let existingItem = item as? [String : Any]
+    
+      guard existingItem[kSecAttrSynchronizable] == false else { throw KeychainError.noPassword }
+    
+      let updateQuery: [String: Any] = [kSecMatchSearchList as String: [item]]
+    
+      let attributes: [String: Any] = [kSecClass as String: kSecClassInternetPassword,
+                                       kSecAttrServer as String: server,
+                                       kSecAttrAccount as String: account]
+    
+      let status = SecItemUpdate(updateQuery as CFDictionary, attributes as CFDictionary)
+      guard status != errSecItemNotFound else { throw KeychainError.noPassword }
+      guard status == errSecSuccess else { throw KeychainError.unhandledError(status: status) }
+    }
+    
+
+This variant is similar but also troubling.  The problem is we have even checked for one of our attributes, yet we can still leak a credential.  Can you spot why?  Because we have only returned the first value, we have a 50/50 chance if there are two entries, one local and one iCloud.  When the search returns the local, the guard check passes, but the update operation will update both items!  Why?  Because the selection criteria applies to more then one nearly identical item.
+
 Oh continuity…
 
 It seems even Apple can make this mistake, and in a big way.  For those with a MacBook or iPhone and Apple Watch, you’ve probably seen or use `ContinuityUnlock` which is the ability to unlock or login to these devices using the presence of the Watch.  It even flows in reverse!  The Watch can be unlocked by the Phone as well.  After being plagued with some odd security issues myself, and having dug into a ton of the iCloud Keychain model (Octagon Trust, TrustedPeer, CKKS, and the SE restore / sync method), I discovered each time I setup the devices two entries for continuity were being added (Both within the same minute, and both with the same account UUID):
